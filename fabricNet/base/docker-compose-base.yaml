@@ -1,0 +1,157 @@
+# Copyright IBM Corp. All Rights Reserved.
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+
+#version: '2'
+
+services:
+
+  orderer.cole.com:
+    container_name: orderer.cole.com
+    image: hyperledger/fabric-orderer
+    environment:
+      - ORDERER_GENERAL_LOGLEVEL=debug
+      - ORDERER_GENERAL_LISTENADDRESS=0.0.0.0
+      - ORDERER_GENERAL_GENESISMETHOD=file
+      - ORDERER_GENERAL_GENESISFILE=/var/hyperledger/orderer/orderer.genesis.block
+      - ORDERER_GENERAL_LOCALMSPID=OrdererMSP
+      - ORDERER_GENERAL_LOCALMSPDIR=/var/hyperledger/orderer/msp
+      # enabled TLS
+      - ORDERER_GENERAL_TLS_ENABLED=true
+      - ORDERER_GENERAL_TLS_PRIVATEKEY=/var/hyperledger/orderer/tls/server.key
+      - ORDERER_GENERAL_TLS_CERTIFICATE=/var/hyperledger/orderer/tls/server.crt
+      - ORDERER_GENERAL_TLS_ROOTCAS=[/var/hyperledger/orderer/tls/ca.crt]
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric
+    command: orderer
+    volumes:
+      - ../channel-artifacts/genesis.block:/var/hyperledger/orderer/orderer.genesis.block
+      - ../crypto-config/ordererOrganizations/cole.com/orderers/orderer.cole.com/msp:/var/hyperledger/orderer/msp
+      - ../crypto-config/ordererOrganizations/cole.com/orderers/orderer.cole.com/tls/:/var/hyperledger/orderer/tls
+    ports:
+      - 7050:7050
+
+  peer0.companya.cole.com:
+    container_name: peer0.companya.cole.com
+    extends:
+      file: peer-base.yaml
+      service: peer-base
+    environment:
+      - CORE_PEER_ID=peer0.companya.cole.com
+      - CORE_PEER_ADDRESS=peer0.companya.cole.com:7051
+      - CORE_PEER_CHAINCODELISTENADDRESS=peer0.companya.cole.com:7052
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.companya.cole.com:7051
+      - CORE_PEER_LOCALMSPID=CompanyaMSP
+    volumes:
+      - /var/run/:/host/var/run/
+      - ../crypto-config/peerOrganizations/companya.cole.com/peers/peer0.companya.cole.com/msp:/etc/hyperledger/fabric/msp
+      - ../crypto-config/peerOrganizations/companya.cole.com/peers/peer0.companya.cole.com/tls:/etc/hyperledger/fabric/tls
+    ports:
+      - 7051:7051
+      - 7052:7052
+      - 7053:7053
+
+  peer1.companya.cole.com:
+    container_name: peer1.companya.cole.com
+    extends:
+      file: peer-base.yaml
+      service: peer-base
+    environment:
+      - CORE_PEER_ID=peer1.companya.cole.com
+      - CORE_PEER_ADDRESS=peer1.companya.cole.com:7051
+      - CORE_PEER_CHAINCODELISTENADDRESS=peer1.companya.cole.com:7052
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer1.companya.cole.com:7051
+      - CORE_PEER_GOSSIP_BOOTSTRAP=peer1.companya.cole.com:7051
+      - CORE_PEER_LOCALMSPID=CompanyaMSP
+    volumes:
+      - /var/run/:/host/var/run/
+      - ../crypto-config/peerOrganizations/companya.cole.com/peers/peer1.companya.cole.com/msp:/etc/hyperledger/fabric/msp
+      - ../crypto-config/peerOrganizations/companya.cole.com/peers/peer1.companya.cole.com/tls:/etc/hyperledger/fabric/tls
+
+    ports:
+      - 8051:7051
+      - 8052:7052
+      - 8053:7053
+
+  peer0.companyb.cole.com:
+    container_name: peer0.companyb.cole.com
+    extends:
+      file: peer-base.yaml
+      service: peer-base
+    environment:
+      - CORE_PEER_ID=peer0.companyb.cole.com
+      - CORE_PEER_ADDRESS=peer0.companyb.cole.com:7051
+      - CORE_PEER_CHAINCODELISTENADDRESS=peer0.companyb.cole.com:7052
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.companyb.cole.com:7051
+      - CORE_PEER_LOCALMSPID=CompanybMSP
+    volumes:
+      - /var/run/:/host/var/run/
+      - ../crypto-config/peerOrganizations/companyb.cole.com/peers/peer0.companyb.cole.com/msp:/etc/hyperledger/fabric/msp
+      - ../crypto-config/peerOrganizations/companyb.cole.com/peers/peer0.companyb.cole.com/tls:/etc/hyperledger/fabric/tls
+    ports:
+      - 9051:7051
+      - 9052:7052
+      - 9053:7053
+
+  peer1.companyb.cole.com:
+    container_name: peer1.companyb.cole.com
+    extends:
+      file: peer-base.yaml
+      service: peer-base
+    environment:
+      - CORE_PEER_ID=peer1.companyb.cole.com
+      - CORE_PEER_ADDRESS=peer1.companyb.cole.com:7051
+      - CORE_PEER_CHAINCODELISTENADDRESS=peer1.companyb.cole.com:7052
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer1.companyb.cole.com:7051
+      - CORE_PEER_GOSSIP_BOOTSTRAP=peer1.companyb.cole.com:7051
+      - CORE_PEER_LOCALMSPID=CompanybMSP
+    volumes:
+      - /var/run/:/host/var/run/
+      - ../crypto-config/peerOrganizations/companyb.cole.com/peers/peer1.companyb.cole.com/msp:/etc/hyperledger/fabric/msp
+      - ../crypto-config/peerOrganizations/companyb.cole.com/peers/peer1.companyb.cole.com/tls:/etc/hyperledger/fabric/tls
+    ports:
+      - 10051:7051
+      - 10052:7052
+      - 10053:7053
+
+
+  peer0.accountservice.cole.com:
+    container_name: peer0.accountservice.cole.com
+    extends:
+      file: peer-base.yaml
+      service: peer-base
+    environment:
+      - CORE_PEER_ID=peer0.accountservice.cole.com
+      - CORE_PEER_ADDRESS=peer0.accountservice.cole.com:7051
+      - CORE_PEER_CHAINCODELISTENADDRESS=peer0.accountservice.cole.com:7052
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.accountservice.cole.com:7051
+      - CORE_PEER_LOCALMSPID=AccountserviceMSP
+    volumes:
+      - /var/run/:/host/var/run/
+      - ../crypto-config/peerOrganizations/accountservice.cole.com/peers/peer0.accountservice.cole.com/msp:/etc/hyperledger/fabric/msp
+      - ../crypto-config/peerOrganizations/accountservice.cole.com/peers/peer0.accountservice.cole.com/tls:/etc/hyperledger/fabric/tls
+    ports:
+      - 11051:7051
+      - 11052:7052
+      - 11053:7053
+
+  peer1.accountservice.cole.com:
+    container_name: peer1.accountservice.cole.com
+    extends:
+      file: peer-base.yaml
+      service: peer-base
+    environment:
+      - CORE_PEER_ID=peer1.accountservice.cole.com
+      - CORE_PEER_ADDRESS=peer1.accountservice.cole.com:7051
+      - CORE_PEER_CHAINCODELISTENADDRESS=peer1.accountservice.cole.com:7052
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer1.accountservice.cole.com:7051
+      - CORE_PEER_GOSSIP_BOOTSTRAP=peer1.accountservice.cole.com:7051
+      - CORE_PEER_LOCALMSPID=AccountserviceMSP
+    volumes:
+      - /var/run/:/host/var/run/
+      - ../crypto-config/peerOrganizations/accountservice.cole.com/peers/peer1.accountservice.cole.com/msp:/etc/hyperledger/fabric/msp
+      - ../crypto-config/peerOrganizations/accountservice.cole.com/peers/peer1.accountservice.cole.com/tls:/etc/hyperledger/fabric/tls
+    ports:
+      - 12051:7051
+      - 12052:7052
+      - 12053:7053

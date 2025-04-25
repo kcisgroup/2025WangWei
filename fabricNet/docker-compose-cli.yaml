@@ -1,0 +1,249 @@
+# Copyright IBM Corp. All Rights Reserved.
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+
+#version: '2'
+
+services:
+
+  orderer.cole.com:
+    extends:
+      file:   base/docker-compose-base.yaml
+      service: orderer.cole.com
+    container_name: orderer.cole.com
+
+  peer0.companya.cole.com:
+    container_name: peer0.companya.cole.com
+    extends:
+      file:  base/docker-compose-base.yaml
+      service: peer0.companya.cole.com
+
+  peer1.companya.cole.com:
+    container_name: peer1.companya.cole.com
+    extends:
+      file:  base/docker-compose-base.yaml
+      service: peer1.companya.cole.com
+
+  peer0.companyb.cole.com:
+    container_name: peer0.companyb.cole.com
+    extends:
+      file:  base/docker-compose-base.yaml
+      service: peer0.companyb.cole.com
+
+  peer1.companyb.cole.com:
+    container_name: peer1.companyb.cole.com
+    extends:
+      file:  base/docker-compose-base.yaml
+      service: peer1.companyb.cole.com
+
+  peer0.accountservice.cole.com:
+    container_name: peer0.accountservice.cole.com
+    extends:
+      file:  base/docker-compose-base.yaml
+      service: peer0.accountservice.cole.com
+
+  peer1.accountservice.cole.com:
+    container_name: peer1.accountservice.cole.com
+    extends:
+      file:  base/docker-compose-base.yaml
+      service: peer1.accountservice.cole.com
+
+  # 创建通道，然后将当前peer节点加入通道
+  cli_companya:
+    container_name: cli_companya
+    image: hyperledger/fabric-tools
+    tty: true
+    environment:
+      - GOPATH=/opt/gopath
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      - CORE_LOGGING_LEVEL=DEBUG
+      - CORE_PEER_ID=companyaOrg1
+      - CORE_PEER_ADDRESS=peer0.companya.cole.com:7051
+      - CORE_PEER_LOCALMSPID=CompanyaMSP
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_TLS_CERT_FILE=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/companya.cole.com/peers/peer0.companya.cole.com/tls/server.crt
+      - CORE_PEER_TLS_KEY_FILE=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/companya.cole.com/peers/peer0.companya.cole.com/tls/server.key
+      - CORE_PEER_TLS_ROOTCERT_FILE=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/companya.cole.com/peers/peer0.companya.cole.com/tls/ca.crt
+      - CORE_PEER_MSPCONFIGPATH=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/companya.cole.com/users/Admin@companya.cole.com/msp
+      - GODEBUG=netdns=go
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric/peer
+    command: /bin/bash
+    volumes:
+      - /var/run/:/host/var/run/
+      - ./chaincode/go/:/opt/gopath/src/github.com/hyperledger/fabric/chaincode/go
+      - ./crypto-config:/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/
+      - ./channel-artifacts:/opt/gopath/src/github.com/hyperledger/fabric/peer/channel-artifacts
+    depends_on:
+      - orderer.cole.com
+      - peer0.companya.cole.com
+      - peer1.companya.cole.com
+      - peer0.companyb.cole.com
+      - peer1.companyb.cole.com
+      - peer0.accountservice.cole.com
+      - peer1.accountservice.cole.com
+
+  cli_companya1:
+    container_name: cli_companya1
+    image: hyperledger/fabric-tools
+    tty: true
+    environment:
+      - GOPATH=/opt/gopath
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      - CORE_LOGGING_LEVEL=DEBUG
+      - CORE_PEER_ID=companyaOrg2
+      - CORE_PEER_ADDRESS=peer1.companya.cole.com:7051
+      - CORE_PEER_LOCALMSPID=CompanyaMSP
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_TLS_CERT_FILE=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/companya.cole.com/peers/peer1.companya.cole.com/tls/server.crt
+      - CORE_PEER_TLS_KEY_FILE=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/companya.cole.com/peers/peer1.companya.cole.com/tls/server.key
+      - CORE_PEER_TLS_ROOTCERT_FILE=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/companya.cole.com/peers/peer1.companya.cole.com/tls/ca.crt
+      - CORE_PEER_MSPCONFIGPATH=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/companya.cole.com/users/Admin@companya.cole.com/msp
+      - GODEBUG=netdns=go
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric/peer
+    command: /bin/bash
+    volumes:
+      - /var/run/:/host/var/run/
+      - ./chaincode/go/:/opt/gopath/src/github.com/hyperledger/fabric/chaincode/go
+      - ./crypto-config:/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/
+      - ./channel-artifacts:/opt/gopath/src/github.com/hyperledger/fabric/peer/channel-artifacts
+    depends_on:
+      - orderer.cole.com
+      - peer0.companya.cole.com
+      - peer1.companya.cole.com
+      - peer0.companyb.cole.com
+      - peer1.companyb.cole.com
+      - peer0.accountservice.cole.com
+      - peer1.accountservice.cole.com
+
+  cli_companyb:
+    container_name: cli_companyb
+    image: hyperledger/fabric-tools
+    tty: true
+    environment:
+      - GOPATH=/opt/gopath
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      - CORE_LOGGING_LEVEL=DEBUG
+      - CORE_PEER_ID=companybOrg1
+      - CORE_PEER_ADDRESS=peer0.companyb.cole.com:7051
+      - CORE_PEER_LOCALMSPID=CompanybMSP
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_TLS_CERT_FILE=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/companyb.cole.com/peers/peer0.companyb.cole.com/tls/server.crt
+      - CORE_PEER_TLS_KEY_FILE=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/companyb.cole.com/peers/peer0.companyb.cole.com/tls/server.key
+      - CORE_PEER_TLS_ROOTCERT_FILE=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/companyb.cole.com/peers/peer0.companyb.cole.com/tls/ca.crt
+      - CORE_PEER_MSPCONFIGPATH=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/companyb.cole.com/users/Admin@companyb.cole.com/msp
+      - GODEBUG=netdns=go
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric/peer
+    command: /bin/bash
+    volumes:
+      - /var/run/:/host/var/run/
+      - ./chaincode/go/:/opt/gopath/src/github.com/hyperledger/fabric/chaincode/go
+      - ./crypto-config:/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/
+      - ./channel-artifacts:/opt/gopath/src/github.com/hyperledger/fabric/peer/channel-artifacts
+    depends_on:
+      - orderer.cole.com
+      - peer0.companya.cole.com
+      - peer1.companya.cole.com
+      - peer0.companyb.cole.com
+      - peer1.companyb.cole.com
+      - peer0.accountservice.cole.com
+      - peer1.accountservice.cole.com
+
+  cli_companyb1:
+    container_name: cli_companyb1
+    image: hyperledger/fabric-tools
+    tty: true
+    environment:
+      - GOPATH=/opt/gopath
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      - CORE_LOGGING_LEVEL=DEBUG
+      - CORE_PEER_ID=companybOrg2
+      - CORE_PEER_ADDRESS=peer1.companyb.cole.com:7051
+      - CORE_PEER_LOCALMSPID=CompanybMSP
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_TLS_CERT_FILE=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/companyb.cole.com/peers/peer1.companyb.cole.com/tls/server.crt
+      - CORE_PEER_TLS_KEY_FILE=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/companyb.cole.com/peers/peer1.companyb.cole.com/tls/server.key
+      - CORE_PEER_TLS_ROOTCERT_FILE=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/companyb.cole.com/peers/peer1.companyb.cole.com/tls/ca.crt
+      - CORE_PEER_MSPCONFIGPATH=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/companyb.cole.com/users/Admin@companyb.cole.com/msp
+      - GODEBUG=netdns=go
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric/peer
+    command: /bin/bash
+    volumes:
+      - /var/run/:/host/var/run/
+      - ./chaincode/go/:/opt/gopath/src/github.com/hyperledger/fabric/chaincode/go
+      - ./crypto-config:/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/
+      - ./channel-artifacts:/opt/gopath/src/github.com/hyperledger/fabric/peer/channel-artifacts
+    depends_on:
+      - orderer.cole.com
+      - peer0.companya.cole.com
+      - peer1.companya.cole.com
+      - peer0.companyb.cole.com
+      - peer1.companyb.cole.com
+      - peer0.accountservice.cole.com
+      - peer1.accountservice.cole.com
+
+  cli_accountservice:
+    container_name: cli_accountservice
+    image: hyperledger/fabric-tools
+    tty: true
+    environment:
+      - GOPATH=/opt/gopath
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      - CORE_LOGGING_LEVEL=DEBUG
+      - CORE_PEER_ID=accountserviceOrg1
+      - CORE_PEER_ADDRESS=peer0.accountservice.cole.com:7051
+      - CORE_PEER_LOCALMSPID=AccountserviceMSP
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_TLS_CERT_FILE=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/accountservice.cole.com/peers/peer0.accountservice.cole.com/tls/server.crt
+      - CORE_PEER_TLS_KEY_FILE=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/accountservice.cole.com/peers/peer0.accountservice.cole.com/tls/server.key
+      - CORE_PEER_TLS_ROOTCERT_FILE=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/accountservice.cole.com/peers/peer0.accountservice.cole.com/tls/ca.crt
+      - CORE_PEER_MSPCONFIGPATH=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/accountservice.cole.com/users/Admin@accountservice.cole.com/msp
+      - GODEBUG=netdns=go
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric/peer
+    command: /bin/bash
+    volumes:
+      - /var/run/:/host/var/run/
+      - ./chaincode/go/:/opt/gopath/src/github.com/hyperledger/fabric/chaincode/go
+      - ./crypto-config:/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/
+      - ./channel-artifacts:/opt/gopath/src/github.com/hyperledger/fabric/peer/channel-artifacts
+    depends_on:
+      - orderer.cole.com
+      - peer0.companya.cole.com
+      - peer1.companya.cole.com
+      - peer0.companyb.cole.com
+      - peer1.companyb.cole.com
+      - peer0.accountservice.cole.com
+      - peer1.accountservice.cole.com
+
+  cli_accountservice1:
+    container_name: cli_accountservice1
+    image: hyperledger/fabric-tools
+    tty: true
+    environment:
+      - GOPATH=/opt/gopath
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      - CORE_LOGGING_LEVEL=DEBUG
+      - CORE_PEER_ID=accountserviceOrg2
+      - CORE_PEER_ADDRESS=peer1.accountservice.cole.com:7051
+      - CORE_PEER_LOCALMSPID=AccountserviceMSP
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_TLS_CERT_FILE=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/accountservice.cole.com/peers/peer1.accountservice.cole.com/tls/server.crt
+      - CORE_PEER_TLS_KEY_FILE=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/accountservice.cole.com/peers/peer1.accountservice.cole.com/tls/server.key
+      - CORE_PEER_TLS_ROOTCERT_FILE=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/accountservice.cole.com/peers/peer1.accountservice.cole.com/tls/ca.crt
+      - CORE_PEER_MSPCONFIGPATH=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/accountservice.cole.com/users/Admin@accountservice.cole.com/msp
+      - GODEBUG=netdns=go
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric/peer
+    command: /bin/bash
+    volumes:
+      - /var/run/:/host/var/run/
+      - ./chaincode/go/:/opt/gopath/src/github.com/hyperledger/fabric/chaincode/go
+      - ./crypto-config:/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/
+      - ./channel-artifacts:/opt/gopath/src/github.com/hyperledger/fabric/peer/channel-artifacts
+    depends_on:
+      - orderer.cole.com
+      - peer0.companya.cole.com
+      - peer1.companya.cole.com
+      - peer0.companyb.cole.com
+      - peer1.companyb.cole.com
+      - peer0.accountservice.cole.com
+      - peer1.accountservice.cole.com
